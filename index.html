@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electricity Meter Display</title>
+    <link href="https://fonts.cdnfonts.com/css/seven-segment" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('./KWH.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .meter-display {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            top: 150px;
+            left: 150px;
+            background-color: transparent;
+            padding: 20px;
+            width: 400px;
+            height: 100px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(57, 129, 47, 0.4);
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .resize-handle {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background-color: transparent;
+            border: 2px solid #81af81;
+            border-radius: 50%;
+            cursor: nwse-resize;
+        }
+
+        .number-display {
+            display: flex;
+            align-items: center;
+        }
+
+        .number-display img {
+            width: 50px;
+            height: auto;
+            transition: width 0.3s ease;
+        }
+
+        .unit {
+            font-family: Arial, sans-serif;
+            font-size: 30px;
+            color: #000;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+        }
+
+        input[type="text"] {
+            font-size: 20px;
+            padding: 10px;
+            border: none;
+            border-bottom: 2px solid #39812f;
+            background-color: transparent;
+            color: #fff;
+            width: 250px;
+            text-align: center;
+            margin-top: 590px;
+        }
+
+        .font-size-input {
+            font-size: 20px;
+            padding: 10px;
+            border: none;
+            border-bottom: 2px solid #39812f;
+            background-color: transparent;
+            color: #fff;
+            width: 100px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .font-size-input-unit {
+            font-size: 20px;
+            padding: 10px;
+            border: none;
+            border-bottom: 2px solid #39812f;
+            background-color: transparent;
+            color: #fff;
+            width: 100px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .size-button {
+            margin: 0 10px;
+            padding: 5px 10px;
+            background-color: #39812f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .color-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .color-button {
+            padding: 15px;
+            margin: 5px 0;
+            border: none;
+            cursor: pointer;
+            color: #fff;
+            font-size: 20px;
+            border-radius: 50%;
+        }
+
+        .color-button:hover {
+            opacity: 0.8;
+        }
+
+        .color-button-1 {
+            background-color: #6b7c6a;
+        }
+
+        .color-button-2 {
+            background-color: #81af81;
+
+        }
+
+        .color-button-3 {
+            background-color: #8fc0e3;
+        }
+
+        .bottom-buttons {
+            margin-top: auto;
+            display: flex;
+            gap: 20px;
+        }
+
+        .bottom-button {
+            padding: 10px 20px;
+            background-color: #39812f;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .bottom-button:hover {
+            background-color: #2d6625;
+        }
+    </style>
+</head>
+<body>
+    <div class="meter-display" id="meterOutput">
+        <div class="number-display" id="numberDisplay">
+            <!-- The number images will go here -->
+        </div>
+        <span class="unit" id="unitDisplay"></span>
+        <div class="resize-handle"></div>
+    </div>
+    <input type="text" id="meterInput" placeholder="Enter number (e.g., 123.45)" oninput="updateDisplay()">
+
+    <div>
+        <button class="size-button" onclick="changeNumberImageSize(-2)">-</button>
+        <button class="size-button" onclick="changeNumberImageSize(2)">+</button>
+    </div>
+
+    <input type="number" id="fontSizeInputUnit" class="font-size-input-unit" value="30" min="10" max="100" oninput="changeFontSizeUnit()">
+
+    <div class="color-buttons">
+        <button class="color-button color-button-1" onclick="changeColor('#6b7c6a')">🔘</button>
+        <button class="color-button color-button-2" onclick="changeColor('#81af81')">🔘</button>
+        <button class="color-button color-button-3" onclick="changeColor('#8fc0e3')">🔘</button>
+    </div>
+
+    <div class="bottom-buttons">
+        <button class="bottom-button" onclick="changeBackground('KWH.jpeg')">KWH</button>
+        <button class="bottom-button" onclick="changeBackground('KW.jpeg')">KW</button>
+    </div>
+
+    <script>
+        function changeBackground(image) {
+            document.body.style.backgroundImage = `url('./${image}')`;
+        }
+        let isDragging = false;
+        let isResizing = false;
+        let startX, startY, startWidth, startHeight, offsetX, offsetY;
+        let currentNumberImageSize = 50; // Initial image size
+
+        const meterOutput = document.getElementById("meterOutput");
+        const resizeHandle = document.querySelector(".resize-handle");
+
+        // Dragging functionality
+        meterOutput.addEventListener("mousedown", startDrag);
+        meterOutput.addEventListener("touchstart", startDrag, { passive: false });
+        document.addEventListener("mousemove", drag);
+        document.addEventListener("touchmove", drag, { passive: false });
+        document.addEventListener("mouseup", stopDrag);
+        document.addEventListener("touchend", stopDrag);
+
+        function startDrag(e) {
+            if (e.target === resizeHandle) return; // Skip if resizing
+            isDragging = true;
+            startX = e.touches ? e.touches[0].clientX : e.clientX;
+            startY = e.touches ? e.touches[0].clientY : e.clientY;
+            offsetX = meterOutput.offsetLeft;
+            offsetY = meterOutput.offsetTop;
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            const currentX = e.touches ? e.touches[0].clientX : e.clientX;
+            const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+            meterOutput.style.left = `${offsetX + (currentX - startX)}px`;
+            meterOutput.style.top = `${offsetY + (currentY - startY)}px`;
+        }
+
+        function stopDrag() {
+            isDragging = false;
+        }
+
+        // Resizing functionality
+        resizeHandle.addEventListener("mousedown", startResize);
+        resizeHandle.addEventListener("touchstart", startResize, { passive: false });
+
+        function startResize(e) {
+            isResizing = true;
+            startX = e.touches ? e.touches[0].clientX : e.clientX;
+            startY = e.touches ? e.touches[0].clientY : e.clientY;
+            startWidth = meterOutput.offsetWidth;
+            startHeight = meterOutput.offsetHeight;
+
+            document.addEventListener("mousemove", resize);
+            document.addEventListener("touchmove", resize, { passive: false });
+            document.addEventListener("mouseup", stopResize);
+            document.addEventListener("touchend", stopResize);
+        }
+
+        function resize(e) {
+            if (!isResizing) return;
+            const currentX = e.touches ? e.touches[0].clientX : e.clientX;
+            const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+            const newWidth = startWidth + (currentX - startX);
+            const newHeight = startHeight + (currentY - startY);
+            meterOutput.style.width = `${newWidth}px`;
+            meterOutput.style.height = `${newHeight}px`;
+        }
+
+        function stopResize() {
+            isResizing = false;
+        }
+
+        // Update number display with image-based numbers
+        function updateDisplay() {
+            const input = document.getElementById('meterInput').value;
+            const numberDisplay = document.getElementById('numberDisplay');
+            numberDisplay.innerHTML = ''; // Clear previous display
+
+            if (/[^0-9.]/.test(input) || (input.match(/\./g) || []).length > 1) {
+                numberDisplay.textContent = "Invalid Input";
+            } else {
+                const digits = input.split('');
+                digits.forEach(digit => {
+                    const img = document.createElement('img');
+                    if (digit >= '0' && digit <= '9') {
+                        img.src = `./${digit}.jpeg`;
+                        img.style.width = `${currentNumberImageSize}px`;
+                    } else if (digit === '.') {
+                        img.src = './Point.jpeg';
+                        img.style.width = `${currentNumberImageSize-35}px`;
+                    
+                    }
+                   
+                    img.alt = digit;
+                   
+                    numberDisplay.appendChild(img);
+
+                });
+            }
+        }
+
+        // Change number image size
+        function changeNumberImageSize(change) {
+            const minSize = 10;
+            const maxSize = 200;
+            currentNumberImageSize = Math.min(Math.max(currentNumberImageSize + change, minSize), maxSize);
+            const images = document.querySelectorAll('#numberDisplay img');
+            images.forEach(img => {
+                img.style.width = `${currentNumberImageSize}px`;
+            });
+        }
+
+        // Change font size
+        function changeFontSize() {
+            const fontSize = document.getElementById('fontSizeInput').value;
+            const numberDisplay = document.getElementById('numberDisplay');
+            numberDisplay.style.fontSize = `${fontSize}px`;
+        }
+
+        // Change font size for unit
+        function changeFontSizeUnit() {
+            const fontSizeUnit = document.getElementById('fontSizeInputUnit').value;
+            const unitDisplay = document.getElementById('unitDisplay');
+            unitDisplay.style.fontSize = `${fontSizeUnit}px`;
+        }
+
+        // Change color of the meter display
+        function changeColor(color) {
+            meterOutput.style.backgroundColor = color;
+        }
+        // Other scripts remain the same
+        // (updateDisplay, changeNumberImageSize, etc.)
+    </script>
+</body>
+</html>
