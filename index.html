@@ -25,8 +25,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            top: 150px;
-            left: 150px;
+            top: 11.9%;
+            left: 2.2%;
             background-color: transparent;
             padding: 20px;
             width: 400px;
@@ -55,19 +55,12 @@
         }
 
         .number-display img {
-            width: 50px;
+            width: 28px;
             height: auto;
             transition: width 0.3s ease;
         }
 
-        .unit {
-            font-family: Arial, sans-serif;
-            font-size: 30px;
-            color: #000;
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-        }
+       
 
         input[type="text"] {
             font-size: 20px;
@@ -186,19 +179,9 @@
         <button class="size-button" onclick="changeNumberImageSize(2)">+</button>
     </div>
 
-    <input type="number" id="fontSizeInputUnit" class="font-size-input-unit" value="30" min="10" max="100" oninput="changeFontSizeUnit()">
+    
 
-    <div class="color-buttons">
-        <button class="color-button color-button-1" onclick="changeColor('#6b7c6a')">🔘</button>
-        <button class="color-button color-button-2" onclick="changeColor('#81af81')">🔘</button>
-        <button class="color-button color-button-3" onclick="changeColor('#8fc0e3')">🔘</button>
-    </div>
-
-    <div class="bottom-buttons">
-        <button class="bottom-button" onclick="changeBackground('KWH.jpeg')">KWH</button>
-        <button class="bottom-button" onclick="changeBackground('KW.jpeg')">KW</button>
-    </div>
-
+    
     <script>
         function changeBackground(image) {
             document.body.style.backgroundImage = `url('./${image}')`;
@@ -206,7 +189,7 @@
         let isDragging = false;
         let isResizing = false;
         let startX, startY, startWidth, startHeight, offsetX, offsetY;
-        let currentNumberImageSize = 50; // Initial image size
+        let currentNumberImageSize = 28; // Initial image size
 
         const meterOutput = document.getElementById("meterOutput");
         const resizeHandle = document.querySelector(".resize-handle");
@@ -318,19 +301,9 @@
             numberDisplay.style.fontSize = `${fontSize}px`;
         }
 
-        // Change font size for unit
-        function changeFontSizeUnit() {
-            const fontSizeUnit = document.getElementById('fontSizeInputUnit').value;
-            const unitDisplay = document.getElementById('unitDisplay');
-            unitDisplay.style.fontSize = `${fontSizeUnit}px`;
-        }
 
-        // Change color of the meter display
-        function changeColor(color) {
-            meterOutput.style.backgroundColor = color;
-        }
-        // Other scripts remain the same
-        // (updateDisplay, changeNumberImageSize, etc.)
+      
+     
     </script>
 </body>
 </html>
